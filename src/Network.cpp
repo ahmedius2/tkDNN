@@ -28,7 +28,28 @@ Network::Network(dataDim_t input_dim) {
             fp16 = true;
         else if(strcmp(env_p, "DLA") == 0) {
             dla = true;
+            fp16 = true;
+            dla_core=0;
+        }
+        else if(strcmp(env_p, "DLA0_FP16") == 0) {
+            dla = true;
             fp16 = true;	
+            dla_core=0;
+        }
+        else if(strcmp(env_p, "DLA0_INT8") == 0) {
+            dla = true;
+            int8 = true;
+            dla_core=0;
+        }
+        else if(strcmp(env_p, "DLA1_FP16") == 0) {
+            dla = true;
+            fp16 = true;
+            dla_core=1;
+        }
+        else if(strcmp(env_p, "DLA1_INT8") == 0) {
+            dla = true;
+            int8 = true;
+            dla_core=1;
         }
         else if(strcmp(env_p, "INT8") == 0) {
             int8 = true;
@@ -139,12 +160,16 @@ const char *Network::getNetworkRTName(const char *network_name){
         strcat(RTName, "_fp16.rt");
         RTName[network_name_len + 8] = '\0';
     }
-    else if (dla){
+    else if (dla && int8){
         strcpy(RTName, network_name);
-        strcat(RTName, "_dla.rt");
-        RTName[network_name_len + 7] = '\0';
+        strcat(RTName, "_dla_int8.rt");
+        RTName[network_name_len + 12] = '\0';
     }
-        
+    else if (dla && fp16){
+        strcpy(RTName, network_name);
+        strcat(RTName, "_dla_fp16.rt");
+        RTName[network_name_len + 12] = '\0';
+    }
     else if (int8){
         strcpy(RTName, network_name);
         strcat(RTName, "_int8.rt");

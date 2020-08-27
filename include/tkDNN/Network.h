@@ -63,7 +63,7 @@ public:
     dataDim_t getOutputDim();
 
     bool fp16, dla, int8;
-    int maxBatchSize;
+    int maxBatchSize,dla_core;
     bool dontLoadWeights;
     std::string fileImgList;
     std::string fileLabelList;

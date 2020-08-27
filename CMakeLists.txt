@@ -36,8 +36,19 @@ cuda_add_library(kernels SHARED ${tkdnn_CUSRC})
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-find_package(OpenCV REQUIRED)
+find_package(VTK REQUIRED)
+find_package(gflags REQUIRED)
+
+#set(OpenCV_LIBS "/shared/opencv-4.1.2/install/lib")
+#set(OPENCV_INCLUDE_DIRS "/shared/opencv-4.1.2/install/include/opencv4")
+#find_package(OpenCV REQUIRED)
+set(OpenCV_STATIC ON)
+find_package(OpenCV REQUIRED PATHS /shared/opencv-4.1.2/install_static NO_DEFAULT_PATH)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOPENCV")
+
+#message( ${OpenCV_LIBS} )
+#message( ${OPENCV_INCLUDE_DIRS} )
+message( ${CMAKE_MODULE_PATH} )
 
 # gives problems in cross-compiling, probably malformed cmake config
 #find_package(yaml-cpp REQUIRED)

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <signal.h>
 #include <stdlib.h>     /* srand, rand */
 #include <unistd.h>
@@ -115,7 +116,7 @@ int main(int argc, char *argv[]) {
     
         //inference
         detNN->update(batch_dnn_input, n_batch);
-        detNN->draw(batch_frame);
+        //detNN->draw(batch_frame);
 
         if(show){
             for(int bi=0; bi< n_batch; ++bi){
@@ -123,8 +124,10 @@ int main(int argc, char *argv[]) {
                 cv::waitKey(1);
             }
         }
-        if(n_batch == 1 && SAVE_RESULT)
+        if(n_batch == 1 && SAVE_RESULT){
             resultVideo << frame;
+            sync(); // in order to stop possible interference with update
+        }
     }
 
     std::cout<<"detection end\n";   
@@ -134,8 +137,11 @@ int main(int argc, char *argv[]) {
     std::cout<<"Min: "<<*std::min_element(detNN->stats.begin(), detNN->stats.end())/n_batch<<" ms\n";    
     std::cout<<"Max: "<<*std::max_element(detNN->stats.begin(), detNN->stats.end())/n_batch<<" ms\n";    
     for(int i=0; i<detNN->stats.size(); i++) mean += detNN->stats[i]; mean /= detNN->stats.size();
-    std::cout<<"Avg: "<<mean/n_batch<<" ms\t"<<1000/(mean/n_batch)<<" FPS\n"<<COL_END;   
-    
+    std::cout<<"Avg: "<<mean/n_batch<<" ms\t"<<1000/(mean/n_batch)<<" FPS\n"<<COL_END;
+
+    std::ofstream wf(net.substr(0,net.length()-3)+"_timing.dat", std::ios::out | std::ios::app);
+    for(auto tdiff : detNN->stats)
+        wf << tdiff << std::endl;
 
     return 0;
 }

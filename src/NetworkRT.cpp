@@ -41,11 +41,11 @@ NetworkRT::NetworkRT(Network *net, const char *name) {
 #endif
     networkRT = builderRT->createNetwork();
 #if NV_TENSORRT_MAJOR >= 6                
-        configRT = builderRT->createBuilderConfig();
+    configRT = builderRT->createBuilderConfig();
 #endif
     
     if(!fileExist(name)) {
-#if NV_TENSORRT_MAJOR >= 6                
+#if NV_TENSORRT_MAJOR >= 6
         // Calibrator life time needs to last until after the engine is built.
         std::unique_ptr<IInt8EntropyCalibrator> calibrator;
 
@@ -56,7 +56,7 @@ NetworkRT::NetworkRT(Network *net, const char *name) {
 #endif
         //input and dataType
         dataDim_t dim = net->layers[0]->input_dim;
-        dtRT = DataType::kFLOAT;
+        dtRT = DataType::kFLOAT; // default
 
         builderRT->setMaxBatchSize(net->maxBatchSize);
         builderRT->setMaxWorkspaceSize(1 << 30);
@@ -70,17 +70,21 @@ NetworkRT::NetworkRT(Network *net, const char *name) {
         }
 #if NV_TENSORRT_MAJOR >= 5
         if(net->dla && builderRT->getNbDLACores() > 0) {
-            dtRT = DataType::kHALF;
-            builderRT->setFp16Mode(true);
             builderRT->allowGPUFallback(true);
             builderRT->setDefaultDeviceType(DeviceType::kDLA);
-            builderRT->setDLACore(0);
-        }
+            builderRT->setDLACore(net->dla_core);
+#if NV_TENSORRT_MAJOR >= 6
+            configRT->setFlag(BuilderFlag::kGPU_FALLBACK);
+            configRT->setDefaultDeviceType(DeviceType::kDLA);
+            configRT->setDLACore(net->dla_core);
 #endif
-#if NV_TENSORRT_MAJOR >= 6                
+        }
+
+#endif
+
+#if NV_TENSORRT_MAJOR >= 6
         if(net->int8 && builderRT->platformHasFastInt8()){
-            // dtRT = DataType::kINT8;
-            // builderRT->setInt8Mode(true);
+            configRT->setFlag(BuilderFlag::kFP16); // for fallback
             configRT->setFlag(BuilderFlag::kINT8);
             BatchStream calibrationStream(dim, 1, 100,      //TODO: check if 100 images are sufficient to the calibration (or 4951) 
                                             net->fileImgList, net->fileLabelList);
@@ -118,13 +122,18 @@ NetworkRT::NetworkRT(Network *net, const char *name) {
             }
 #endif
             Ilay->setName( (l->getLayerName() + std::to_string(i)).c_str() );
-            
+
             input = Ilay->getOutput(0);
             input->setName( (l->getLayerName() + std::to_string(i) + "_out").c_str() );
             
             if(l->final)
                 networkRT->markOutput(*input);
             tensors[l] = input;
+
+            if (net->dla && !configRT->canRunOnDLA(Ilay)){
+                std::cout << "Layer " << Ilay->getName() << " can't run on DLA!\n";
+            }
+
         }
         if(input == NULL)
             FatalError("conversion failed");
@@ -158,6 +167,8 @@ NetworkRT::NetworkRT(Network *net, const char *name) {
 	std::cout<<"Input/outputs numbers: "<<engineRT->getNbBindings()<<"\n";
     if(engineRT->getNbBindings() > MAX_BUFFERS_RT)
         FatalError("over RT buffer array size");
+
+
 
 	// In order to bind the buffers, we need to know the names of the input and output tensors.
 	// note that indices are guaranteed to be less than IEngine::getNbBindings()
