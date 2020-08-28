@@ -4,7 +4,7 @@
 #include "test.h"
 #include "DarknetParser.h"
 
-int main() {
+int main(int argc, char *argv[]) {
     std::string bin_path  = "yolo3tiny";
     std::vector<std::string> input_bins = { 
         bin_path + "/layers/input.bin"
@@ -13,6 +13,7 @@ int main() {
         bin_path + "/debug/layer16_out.bin",
         bin_path + "/debug/layer23_out.bin",
     };
+
     std::string wgs_path  = bin_path + "/layers";
     std::string cfg_path  = std::string(TKDNN_PATH) + "/tests/darknet/cfg/yolo3tiny.cfg";
     std::string name_path = std::string(TKDNN_PATH) + "/tests/darknet/names/coco.names";
@@ -23,7 +24,10 @@ int main() {
     net->print();
 
     //convert network to tensorRT
-    tk::dnn::NetworkRT *netRT = new tk::dnn::NetworkRT(net, net->getNetworkRTName(bin_path.c_str()));
+    std::string network_name(bin_path);
+    if (argc == 2)
+    	network_name += argv[1];
+    tk::dnn::NetworkRT *netRT = new tk::dnn::NetworkRT(net, net->getNetworkRTName(network_name.c_str()));
     
     int ret = testInference(input_bins, output_bins, net, netRT);
     net->releaseLayers();

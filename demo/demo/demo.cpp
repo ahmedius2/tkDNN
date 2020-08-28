@@ -118,16 +118,16 @@ int main(int argc, char *argv[]) {
         detNN->update(batch_dnn_input, n_batch);
         //detNN->draw(batch_frame);
 
-        if(show){
-            for(int bi=0; bi< n_batch; ++bi){
-                cv::imshow("detection", batch_frame[bi]);
-                cv::waitKey(1);
-            }
-        }
-        if(n_batch == 1 && SAVE_RESULT){
-            resultVideo << frame;
-            sync(); // in order to stop possible interference with update
-        }
+        //if(show){
+        //    for(int bi=0; bi< n_batch; ++bi){
+        //        cv::imshow("detection", batch_frame[bi]);
+        //        cv::waitKey(1);
+        //    }
+        //}
+        //if(n_batch == 1 && SAVE_RESULT){
+        //    resultVideo << frame;
+        //    sync(); // in order to stop possible interference with update
+        //}
     }
 
     std::cout<<"detection end\n";   
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
     for(int i=0; i<detNN->stats.size(); i++) mean += detNN->stats[i]; mean /= detNN->stats.size();
     std::cout<<"Avg: "<<mean/n_batch<<" ms\t"<<1000/(mean/n_batch)<<" FPS\n"<<COL_END;
 
-    std::ofstream wf(net.substr(0,net.length()-3)+"_timing.dat", std::ios::out | std::ios::app);
+    std::ofstream wf(net.substr(0,net.length()-3)+"_timing.dat", std::ios::out);
     for(auto tdiff : detNN->stats)
         wf << tdiff << std::endl;
 

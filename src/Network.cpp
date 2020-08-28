@@ -154,20 +154,20 @@ void Network::print() {
 const char *Network::getNetworkRTName(const char *network_name){
     networkName = network_name;
     int network_name_len = strlen(network_name);
-    char *RTName = (char *)malloc((network_name_len + 9)*sizeof(char));
-    if (fp16){
+    char *RTName = (char *)malloc((network_name_len + 13)*sizeof(char));
+    if (fp16 && !dla){
         strcpy(RTName, network_name);
         strcat(RTName, "_fp16.rt");
         RTName[network_name_len + 8] = '\0';
     }
     else if (dla && int8){
         strcpy(RTName, network_name);
-        strcat(RTName, "_dla_int8.rt");
+        strcat(RTName, "_dla-int8.rt");
         RTName[network_name_len + 12] = '\0';
     }
     else if (dla && fp16){
         strcpy(RTName, network_name);
-        strcat(RTName, "_dla_fp16.rt");
+        strcat(RTName, "_dla-fp16.rt");
         RTName[network_name_len + 12] = '\0';
     }
     else if (int8){
