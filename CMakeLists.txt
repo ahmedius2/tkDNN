@@ -15,7 +15,7 @@ add_definitions(-DTKDNN_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
 #-------------------------------------------------------------------------------
 # CUDA
 #-------------------------------------------------------------------------------
-find_package(CUDA 9.0 REQUIRED)
+find_package(CUDA 10.0 REQUIRED)
 SET(CUDA_SEPARABLE_COMPILATION ON)
 #set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_30 --compiler-options '-fPIC'")
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --maxrregcount=32)
@@ -39,16 +39,11 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 find_package(VTK REQUIRED)
 find_package(gflags REQUIRED)
 
-#set(OpenCV_LIBS "/shared/opencv-4.1.2/install/lib")
-#set(OPENCV_INCLUDE_DIRS "/shared/opencv-4.1.2/install/include/opencv4")
-#find_package(OpenCV REQUIRED)
 set(OpenCV_STATIC ON)
-find_package(OpenCV REQUIRED PATHS /shared/opencv-4.1.2/install_static NO_DEFAULT_PATH)
+find_package(OpenCV REQUIRED PATHS /shared/opencv/install_static NO_DEFAULT_PATH)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOPENCV")
 
-#message( ${OpenCV_LIBS} )
-#message( ${OPENCV_INCLUDE_DIRS} )
-message( ${CMAKE_MODULE_PATH} )
+#message( ${CMAKE_MODULE_PATH} )
 
 # gives problems in cross-compiling, probably malformed cmake config
 #find_package(yaml-cpp REQUIRED)
